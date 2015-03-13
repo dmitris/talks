@@ -1,0 +1,131 @@
+Writing Web Crawler in Go
+(experiences and lessons)
+24 Apr 2014
+Tags: golang, crawler, automation
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+@dimisec
+
+* Overview
+
+- Why Go
+- Crawlr and Its Tasks
+- Moving Parts
+- Demo
+- Lessons 
+- Open Problems and Next Steps 
+
+.image ../gopher-purple.png
+
+* Who I am
+
+Developer, Paranoid (Yahoo! Paranoid Labs)
+
+Short Biography: schools, Y2K, Y!
+
+Gopher Biography:
+  C++, Perl, Python, NodeJS, PHP
+  Go 1.0 
+  Tour, watching talks / reading articles, coding
+
+* Why Go
+
+- Emotion: "Programming is fun again!"
+- Dev friendly: gofmt, goimports, local docs, static checks
+- No dependency hell
+- No "undefined function" runtime errors
+
+* Go for building large-scale tools
+
+- easy deployment
+- http / network batteries included
+- concurrency & performance 
+- Web GUI or webservice wrapper with net/http
+- profiling tooling support
+
+* Crawlr
+
+- research-oriented web crawler (for the specific site)
+- study for a web security scanner
+- specific test tasks (ex. finding dead links)
+
+* Moving Parts
+
+Crawlr Components
+
+Fetcher
+- fetches remote pages
+- incapsulates behavior options (proxy, cookies, auth)
+
+.code fetcher.go
+
+* Parser
+- picks links out of the page
+- limits crawling scope and amount of work to do
+
+.code parser.go
+
+* Driver
+- coordinates the work queue
+- filters and processes results
+
+.code driver.go
+
+* Concurrency
+
+- Parallelized the longest task - fetching pages
+
+- Buffered Channel of "tickets"
+
+- Take a ticket before the ride
+
+.code sync.go
+
+* Demo
+
+* Lessons
+
+- General
+- Technical
+- Social
+
+
+* General lessons
+- Go is surprisingly stable
+- study & rehearse concurrency models beforehand
+- invest into testing scaffolding (mocks)
+- learn profiling early
+
+- ask community when stuck
+
+* Technical points
+- optimal # of parallel crawling jobs: 100-200
+- close Request.Body after reading!
+
+
+* Socializing and Evangelizing Go
+
+- make build and installation procedure embarrassingly simple 
+- set up communication channels ("points of presence")
+- solve a concrete problem and present to colleagues / teammates
+- evangelize in moderation! :)
+- emphasize business value and solution of problems
+- webservices, tools and smaller corporate applications as stepping stones
+
+
+* Open Issues and Next Steps
+- open source code => https://github.com/dmitris
+- plug-in infrastructure (IPC+protobuf?)
+- GUI wrapper
+- pipeline control per each target
+- distributed crawler
+- WIVET benchmarking https://github.com/bedirhan/wivet
+
+* Questions? Comments?
+
+* Credits
+
+The Purple Gopher is based on the work created and shared by Renée French and used according to terms described in the Creative Commons 3.0 Attribution License.  Repainting done by Anja Krombholz (Yahoo!).
+

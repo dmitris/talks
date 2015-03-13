@@ -1,0 +1,5 @@
+rm -fr *
+/Users/dsavints/dev/hack/go/go/bin/go get -v -x git.corp.yahoo.com/paranoids/webseclab.git
+cp -R src/git.corp.yahoo.com/paranoids/webseclab.git src/git.corp.yahoo.com/paranoids/webseclab
+ ~/dev/hack/go/go/bin/go install -v git.corp.yahoo.com/paranoids/webseclab
+/Users/dsavints/dev/hack/go/go/bin/go get -v -x git.corp.yahoo.com/paranoids/webseclab.git/...

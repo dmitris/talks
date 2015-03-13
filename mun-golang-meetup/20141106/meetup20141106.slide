@@ -1,0 +1,56 @@
+dotGo 2014
+06 Nov 2014
+Tags: golang, dotgoeu
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+@dimisec
+
+* dotGo 2014
+
+- 1-day conference
+- half-day workshops
+- 400+ Gophers
+
+* Highlights
+
+- personal and subjective
+
+
+* Interfaces!!
+- top theme throughout the talks
+
+* John Graham-Cumming
+
+- Go's "easy composition"
+- rework of repeated pattern in utilities
+- read / process / print (see handout) 
+.link http://youtu.be/woCg2zaIVzQ
+
+* Dave Cheney - Functional Options
+
+- the power and usefulness of variadic args
+- elegant handling of configuration params
+- variadic options are functions applied to the main entity!
+.link http://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis
+
+* Keith Rarick - godep
+- godep rationale, 
+
+* Workshop
+- "Whispering Gophers"
+- Networking hands-on tutorial / peer-to-peer chat
+- Great example of idiomatic coding
+- ... especially when you compare with what you just wrote :)
+- ad-hoc addition: limit messages per IP (against DoS)
+.link https://code.google.com/p/whispering-gophers/
+
+* Random bits
+- dependency handling: open problem
+- "Google does not have that problem"
+- Google rewrites all paths when storing code internally
+
+* More information
+- videos are (partly) posted on youtube
+- Sourceparagraph recap is a good one

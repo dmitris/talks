@@ -1,0 +1,261 @@
+Webseclab - security scanning test suite in Go
+17 Feb 2015
+Tags: golang, web application security, webseclab
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+https://github.com/yahoo/webseclab
+@dimisec
+
+* Who I am
+
+Security Engineer at Yahoo! (Paranoid Labs)
+
+C++, Perl, PHP, Python, NodeJS, *Go*
+
+.image ../../gopher-purple.png
+
+* Overview
+
+- Web Security domain and Go
+- Webseclab - purpose and goals
+- set of web security tests
+- toolkit for creating new tests and demos
+- technical details
+- Demo!
+- lessons and next steps
+
+* Web Application Security and Go
+
+* Web Application Security
+
+- specialized Q&A
+- enabling development (+ consulting / training)
+- automation is paramount at scale
+- tools at the core (often custom)
+
+* Go for tools development
+
+- easy deployment with static libraries, no dependency hell
+- no "undefined function" runtime errors
+- dev friendly: build chain, explicit deps, gofmt / *goimports*, docs
+- test facilities are "right there"
+
+* Go for building web security tools
+
+- http / network batteries included
+- concurrency & performance 
+- Web GUI or webservice wrapper with net/http
+- abstraction "elevator" - allows to move to lower levels when needed
+
+* Webseclab
+
+* Motivation
+- large variety of XSS issues
+- variety of browsers, types of input validation or output encoding
+- need to have running examples
+- testing scanners, investigating incidents, training / discussions
+- cannot wait until a specific combination comes up in prod!
+
+* Pre-history
+- lots of ad hoc scripts or mini-pages (PHP, etc.)
+- several internal projects to build a vulnerable application
+- yseclab in NodeJS
+
+* Industry parallels
+- the idea is in the air!
+- Google's Firing Range
+- Webgoat
+- DVWS, BadStore
+- see References for the links
+
+* Webseclab
+- site for testing web security scanners
+- toolkit for constructing new tests / cases
+- replication of real use cases (BugBounty, stage/prod)
+- help in discussions and communications
+
+* Open Source!
+
+.link https://github.com/yahoo/webseclab
+
+- first Go-based project open-sourced by Yahoo!
+- first security project released on github.com/yahoo
+
+* Installation
+- ease of installation as a feature
+
+go get -v github.com/yahoo/webseclab/...
+
+- Install instructions
+.link https://github.com/yahoo/webseclab#install
+
+- TODO: Windows
+
+* Webseclab Requirements
+- 80/20: standard vs. "special" cases
+- standard: input -> output with no or wrong filtering
+- "badness" must be tightly controlled (test isolation)
+- "special" cases: HTTP Response Spliting, Referer Injection etc.
+
+* Security protections
+- redirects from FQDN URL to the quad-pair IP address
+- webseclab.corp.mycompany.com => 10.11.12.13
+- protects valuable cookies of the domain
+
+* Webseclab in Go
+- input come as the "in" cgi var in the URL
+- except special cases like headers injection
+- filter converts the input value, sets output structure
+
+* Conventions
+- if URL path ends with .ok, turn off badness
+- URL path ends with _fp = False Positive case
+
+* Webseclab Internals
+- special purpose web mini-framework
+- Go templates (text/template)
+- "library" for input [mis]filtering
+- composition of standard filter blocks:
+
+TagsOff, DoubleQuotesOff, SpacesOff etc.
+
+* Webseclab standard filters
+.code filter.go
+
+* Custom input processing
+.code transform.go
+
+* Replicating Badness
+- Quick addition of cases (paste template, set filters)
+- Allows to see the issue in the realistic setting, HTML et al.
+
+* Resurrecting Badness
+- bring out to life issues that are already fixed
+- based on the HTML / network dumps done by Incident Response
+
+* Webseclab Demo
+
+* Webseclab Proof-of-Exploits (PoEs)
+- Most sample PoEs are given in the README.md:
+.link https://github.com/yahoo/webseclab#webseclab-tests
+- Firefox recommended (no XSSAuditor and such)
+
+* Basic echo
+.link http://127.0.0.1:8080/xss/reflect/basic?in=hi
+
+* Basic XSS
+
+.link http://127.0.0.1:8080/xss/reflect/basic?in=hi<script>alert(/XSS/)</script>
+
+* echo on POST
+.link http://127.0.0.1:8080/xss/reflect/post1
+
+* Post XSS attempt
+- try searching for: 
+ <img src=foo onerror=alert(/XSS/)>
+
+
+- check the page source:
+ <INPUT type="text" id="in" name="in" size="40" value="<img src=foo onerror=alert(/XSS/)>">
+
+- think how to modify the "attack"...
+
+* Post XSS
+- search for: 
+ "><img src=foo onerror=alert(/XSS/)>
+
+- Bingo!
+
+* Double-Quoted Injection
+
+.link http://127.0.0.1:8080/xss/reflect/doubq1?in=change_me2
+
+* Double-Quotes XSS Injection
+
+.link http://127.0.0.1:8080/xss/reflect/doubq1?in=%253Cscript%253Ealert%28%252FXSS%252F%29%253C%252Fscript%253E 
+
+* HTTP Response Splitting
+.link http://127.0.0.1:8080/xss/reflect/rs1?in=change_me3
+
+* HTTP Response Splitting XSS
+.link http://127.0.0.1:8080/xss/reflect/rs1?in=xyz%0D%0A%0D%0A%3Cscript%3Ealert%28123%29%3C/script%3E
+
+* Div attribute
+.link http://127.0.0.1:8080/xss/reflect/onmouseover_div_unquoted?in=changeme6
+
+* Div attribute - "onmouseover" XSS
+.link http://127.0.0.1:8080/xss/reflect/onmouseover_div_unquoted?in=changeme6%20onmouseover=alert%28123%29
+
+* JS injection
+.link http://127.0.0.1:8080/xss/reflect/js6_sq?in=js6
+
+* JS injection XSS
+.link http://127.0.0.1:8080/xss/reflect/js6_sq?in=js6%27,x:alert(12345),y:%27 
+
+* JS and double quotes
+.link http://127.0.0.1:8080/xss/reflect/js4_dq?in=js4_dq
+
+* JS and double-quote injection XSS
+.link http://127.0.0.1:8080/xss/reflect/js4_dq?in=js4%22,x:alert(12345),y:%22
+
+* JS injection no tags:
+.link http://127.0.0.1:8080/xss/reflect/js3_notags?in=xyz
+
+* JS injection no tags XSS:
+.link http://127.0.0.1:8080/xss/reflect/js3_notags?in=0};alert%28123%29;xyz={a:1
+
+* Lessons
+- DRY violations are a red flag, should address soon
+- initially ended up with lots of repetitive functions
+- keep the "package main" part lean (for ease of testing etc.)
+
+* Gotchas
+- Go templates worked great for months
+- ...until they didn't - crash after adding a real-life case
+- the site used blobs of JS templates with {{ }} "moustaches"
+- needed to use Template.Delims() function
+.link http://golang.org/pkg/html/template/#Template.Delims
+
+* Next Steps - Software
+- turn Webseclab into a set of table-driven tests (config catalogue)
+- extension architecture to allow "daisy-chaining" test sites
+- add more tests from BugBounty
+- add tests / demos for topics other than XSS (CSRF, SQLi)
+- add games or quizzes (challenge - hint(s) - solution)
+- add full-blown functional test suite (to test webseclab itself)
+
+
+* Next Steps - Community
+- announce and promote webseclab-dev mailing list
+- engage more closely with scanner authors and communities
+.link https://groups.google.com/forum/#!forum/webseclab-dev
+
+* Conclusion
+- Go is excellent foundation for building security tools 
+- Webseclab is an initial version of our web security test and exploration environment
+- Big potential on the intersection of Go and Webappsec
+
+* References (1)
+- OWASP XSS Cheat Sheet
+.link https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet
+- Firing Range
+.link https://github.com/google/firing-range
+.link https://public-firing-range.appspot.com/
+- OWASP WebGoat (teaching environment)
+.link https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project
+- Google' Gruyere (learning site)
+.link https://google-gruyere.appspot.com/
+
+* References (2)
+- DVWA - Damn Vulnerable Web Application
+.link http://www.dvwa.co.uk/
+.link https://github.com/RandomStorm/DVWA
+- BadStore
+.link https://www.vulnhub.com/entry/badstore-123,41/
+
+* Credits
+
+The Purple Gopher is based on the work created and shared by [[http://www.reneefrench.com][Renée French]] and used according to terms described in the Creative Commons 3.0 Attribution License.
+
