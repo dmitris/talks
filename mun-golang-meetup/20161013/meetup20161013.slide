@@ -1,0 +1,190 @@
+Glide and Go Dependency Management
+13 Oct 2016
+Tags: golang, glide
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+@dimisec
+
+* About me
+
+- Security Engineer @Yahoo
+- Go for security and access-control infrastructure
+- hacking on our Go CI platform
+.image ../../gopher-purple.png
+
+* Overview
+
+- Go dependencies, vendoring and tools
+- Glide: short introduction & demo
+- Our CI experience
+- Wishlist & what's next
+
+
+* Go Dependency Story - Early Days
+- go get <package>
+- simple - allows to get to the working stage quickly
+- everything from the HEAD branch
+- sources = import paths
+
+* Go Get Problems
+
+- no way to specify versions; brittle
+- no reproducible builds
+- no record of which versions used
+- no provision for mirrors
+
+
+* GO15VENDOREXPERIMENT and vendor/
+- available from go1.5 
+- set by default in go1.6
+- made built-in, GO15VENDOREXPERIMENT has *no* *effect* in go1.7 
+
+* Go vendoring
+- place all dependencies in the vendor/ subdirectory
+	ex. myproject/vendor/github.com/gorilla/websocket
+- nested vendor directories are possible but discouraged
+
+* Full deps or "pointers"?
+- possible to check-in all the code into your own vendor/ directory
+- very different opinions!
+- can be a lot of code, complicates searches, interfere with *./...* (go list ./...	etc.)
+
+* Go Package Management Tools
+- record what is needed (versions, mirrors)
+- help to figure out transitive dependencies and their versions
+- help to get the code into vendor/
+
+* Some Major Players
+- Godep https://github.com/tools/godep
+- Glide - https://github.com/Masterminds/glide
+- gb by Dave Cheney http://getgb.io/
+- gom, gpm, glock and many more 
+.link https://github.com/golang/go/wiki/PackageManagementTools
+
+* Listing Dependencies
+- using go list, without stdlib:
+	go list -e -f '{{join .Deps "\n"}}' ./... |  grep -v vendor \
+	  | xargs go list -f '{{if not .Standard}}{{.ImportPath}}{{end}}' | sort
+
+- using govendor
+	go get -u github.com/kardianos/govendor
+	govendor list
+	govendor list -v
+
+* Glide 
+- https://glide.sh/
+- records dependency information in glide.yaml
+- name, version, repo
+- Semantic Versions and Semantic Version ranges
+- supports same control systems as Go (git, bzr, Mercurial / hg, SVN)
+
+* Glide Usage & Demo
+
+* glide init
+- creates glide.yaml
+- glide.yaml records (some) dependencies - possibly with versions (semver)
+
+* glide.yaml
+	package: github.com/yahoo/gryffin
+	import:
+	- package: github.com/bitly/go-nsq
+	  version: ^1.0.6
+	- package: github.com/mfonda/simhash
+	- package: golang.org/x/net
+	  subpackages:
+	  - html
+
+* glide update
+- resolves deps, creates glide.lock and populates vendor
+- glide.lock has all dependencies with the exact version (hash)
+
+* glide.lock
+	hash: 15fc195c0aa1819fbe2608a2d1520332231644b899644ac672bb510cfc4ba077
+	updated: 2016-10-13T19:20:08.793918742+02:00
+	imports:
+	- name: github.com/bitly/go-nsq
+	  version: d71fb89c9e0263aaed89645b0b168e11ccf597b1
+	- name: github.com/mfonda/simhash
+	  version: 79f94a1100d6da8bee6f6c253efc860a137a3186
+	- name: github.com/mreiferson/go-snappystream
+	  version: 028eae7ab5c4c9e2d1cb4c4ca1e53259bbe7e504
+	  subpackages:
+	  - snappy-go
+	- name: golang.org/x/net
+	  version: 6acef71eb69611914f7a30939ea9f6e194c78172
+	  subpackages:
+	  - html
+	  - html/atom
+	- name: golang.org/x/text
+	  version: c745997bb18563e8788428768ce0f034f2b663df
+	  subpackages:
+	  - transform
+	  - unicode/norm
+	testImports: []
+
+* glide install
+- populates vendor/ from glide.lock (calls 'glide update' if none)
+
+
+: Useful to list dependencies recursively
+
+* Corporate World Requirements
+- "frozen state" - reproducible builds
+- mirroring external dependencies "in-house"
+- safety and reliability
+
+* Our use of Glide in CI
+- policy: the "end user" lists ALL the dependencies (including transitive)
+
+* Our use of Glide in CI
+- policy: the "end user" lists ALL the dependencies (including transitive)
+- all external packages are from our mirrors
+
+* Our use of Glide in CI
+- policy: the "end user" lists ALL the dependencies (including transitive)
+- all external packages are from our mirrors
+- all external packages are SHA1 version-pinned and have *repo* in glide.yaml pointing to the mirror
+
+* Our use of Glide in CI
+- policy: the "end user" lists ALL the dependencies (including transitive)
+- all external packages are from our mirrors
+- all external packages are SHA1 version-pinned and have *repo* pointing to the mirror
+- not using symantic versioning (at least, yet)
+
+* Files and VCS
+- glide.yaml is checked in
+- glide.lock and vendor/ are in .gitignore
+- manual periodic updates of glide.yaml after testing / review
+
+* Typical workflow
+- dev: use 'go install' and 'go test' when hacking
+- pre-commit: CI-like Makefile that creates a new GOPATH sandbox, copies code, runs 'glide update', builds...
+- CI: from a clean slate, records glide.lock inside of the compiled binaries (with other metadata)
+- Goal - build with network cutoff from github.com / gopkg.in / golang.org etc.
+
+* Challenges and Wishes
+- time-consuming manual updates
+- glide.yaml pieces has to be copied from one repo to another
+- speed (caching)
+
+* Glide's Present and Future
+- useful features recently added
+- local caching 
+- --no-recursive (fast! but no glide.lock :(  )
+- large refactoring ongoing (vsolver)
+- Kubernetes wants to use Glide 
+
+* Go Dependencies Next Steps
+- a committee of well-known people works on making a standard tool
+- ... likely part of the go toolchain
+- will likely incorporate the experience with Glide and others
+- standard tool will be great!
+
+* Questions?
+
+* Go Gopher Drawing credits:
+The Go gopher was designed by Renee French, reneefrench.blogspot.com
+The design is licensed under the Creative Commons 3.0 Attributions license.
+For more details: blog.golang.org/gopher
