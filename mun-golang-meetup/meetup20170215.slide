@@ -83,8 +83,12 @@ https://github.com/dmitris
 - slight performance degradation
 - `SliceStable` and `SliceIsSorted` as well
 
-* Plugins (Linux)
+* Plugins (Linux only)
 .code 20170215/plugin/plugin.go
+
+Can be compiled (on Linux) into a shared object with:
+
+    go build -buildmode=plugin
 
 * Testing mutexes
 - profile benchmarks and mutex contentions:
