@@ -111,6 +111,10 @@ Can be compiled (on Linux) into a shared object with:
 - did not make in 1.8, very likely in 1.9
 - scope limited to type aliases
 
+.link https://github.com/golang/go/issues/18130
+
+	type NewFoo = OldFoo // NewFoo is an alias for OldFoo
+
 * Dependency tool
 - go dep
 - currently pre-alpha: https://github.com/golang/dep
