@@ -1,0 +1,120 @@
+Go at 1.8: Checkpoint
+15 Feb 2017
+Tags: golang, go1.8
+
+Dmitry Savintsev
+Paranoid, Yahoo!
+https://github.com/dmitris
+@dimisec
+
+* Roadmap
+- Past: Go before 1.8
+- Present: go1.8
+- Future: go1.9
+- ... and always: Go community (@Munich)
+
+* Go Recent Past
+
+* go1.7 - go1.8
+( a few sample picks)
+- GO15VENDOREXPERIMENT - from option to default
+- transparent HTTP/2 support in net/http
+
+* HTTP/2 with net/http
+.code 20170215/http2/main.go
+
+* HTTP/2 net/http
+.image 20170215/img/http2.png	
+
+* context
+- stdlib - "first class citizen"
+- control lifetimes "at a distance"
+- timeouts - set a deadline
+- cancellation - summon back ("quit ASAP!")
+
+* context usage
+- typical usage: high volume server
+- abort processing for cancelled requests
+- with gRPC, can travel across servers/processes
+
+* context idioms
+- pass by value, never pass nil Context
+- ... instead use context.Todo() or context.Background()
+- watch context.Done channel with select
+- if fired, return context.Err()
+
+* context use demo
+.code 20170215/ioplus/readfile.go /func ReadFile/,/}/
+
+* read data in a goroutine
+.code 20170215/ioplus/readfile.go /go func()/,/define and call/
+
+* watch for context expiration
+.code 20170215/ioplus/readfile.go /Now, wait/,/return ret.data, ret.err/
+
+* context for timeout testing
+- test can create default/empty context (= default timeout)
+- or custom (ex. short) timeouts
+
+* context - test with no timeout
+.code 20170215/ioplus/readfile_test.go /func TestReadFileWithoutTimeout/,/^}/
+
+* context - test with timeout
+.code 20170215/ioplus/readfile_test.go /func TestReadFileWithTimeout/,/^}/
+
+* Go 1.8
+* GOPATH default
+- `$HOME/go` default on Unix (Yay!)
+- `%USERPROFILE%\go` on Windows
+- great news for new Gophers
+
+* Language
+- Conversion rules & type comparison
+- types that differ only in struct tags are considered the same
+- "*ignoring*struct*tags*" added to the spec
+- *ignoring*struct*tags*, x's type and T have identical underlying types.
+- (same for pointers)
+
+* Stdlib 
+
+* sort.Slice
+- sort.Slice - new function
+- less boilerplate (`Len`, `Less`, and `Swap` function)
+- slight performance degradation
+- `SliceStable` and `SliceIsSorted` as well
+
+* Plugins (Linux)
+.code 20170215/plugin/plugin.go
+
+* Testing mutexes
+- profile benchmarks and mutex contentions:
+
+	go test bench=. -mutexprofile=mutex.out
+
+* Tools
+- go tool vet - better static checks of using nil's
+
+	res, err := http.Get("https://meetup.com")
+	defer res.Body.Close() // Oops if err != nil (since res is nil)
+
+* SSA everywhere, better GC
+- SSA compiler backend
+- even shorter - *sub-Millisecond* - GC pauses 
+
+* Go 1.9
+* Aliases
+- support of large-scale code refactoring
+- did not make in 1.8, very likely in 1.9
+- scope limited to type aliases
+
+* Dependency tool
+- go dep
+- currently pre-alpha: https://github.com/golang/dep
+
+* Go Community @Munich
+- Gopher Munich meetup has recently exceeded *500* members!
+- Feb. 2015: 122 gophers
+- Feb. 2016: 322
+- Feb. 2017: *517*
+- Munich Tech Map: *7%* of companies using Go
+- Bright times ahead! :)
