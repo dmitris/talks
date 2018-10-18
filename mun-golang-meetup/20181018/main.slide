@@ -383,8 +383,6 @@ $ diff go.mod go.mod.backup
 
 * Dive Right In!
 
-.image images/diveinmeme.jpeg
-
 * Getting Started with modules
 - start by trying in existing project: 
 
