@@ -14,7 +14,6 @@ https://github.com/dmitris
 - why Go modules needed and what they are
 - Go modules 101 / Getting Started
 - Daily life with modules (main commands, gotchas...)
-- Compare with the current tool (glide / dep)
 - Making the transition
 - Next steps with modules
 
@@ -325,9 +324,14 @@ $ diff go.mod go.mod.backup
 ---
 > 	github.com/BurntSushi/toml v0.3.0 // indirect
 
+* dependencies stay "pinned down"!
+- no automatic upgrading
+- reproducible builds
+
 * module versions >= 2
 
 - versions higher than 1.x become part of the import statement
+- usage: "business as usual"
 	$ grep go-github go.mod
 		github.com/google/go-github/v18 v18.2.0
 
@@ -381,7 +385,7 @@ $ diff go.mod go.mod.backup
 
 * Next Steps
 
-* Dive Right In!
+- Dive Right In!
 
 * Getting Started with modules
 - start by trying in existing project: 
