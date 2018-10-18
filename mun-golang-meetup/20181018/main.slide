@@ -1,0 +1,192 @@
+Go dependency management with modules
+- practical introduction
+
+18 Oct 2018
+
+Tags: golang, go1.11, modules
+
+Dmitry Savintsev
+Oath
+https://github.com/dmitris
+@dimisec
+
+* Main topics
+- why Go modules needed and what they are
+- Go modules 101 / Getting Started
+- Daily life with modules (main commands, gotchas...)
+- Compare with the current tool (glide / dep)
+- Making the transition
+- Next steps with modules
+
+* Need for dependency management
+
+when programs `import` packages, go tool need to know:
+
+- where to get them from
+
+- what version to use
+
+- for direct and indirect dependencies
+
+* "Legacy" go get
+
+- uses GOPATH for local storage of code
+
+- package already in GOPATH? use it
+
+- package not in GOPATH? fetch the *latest* version
+
+- `go get -u <package>` - update to the *latest* version
+
+* Diamond Dependencies - Tragedy in Three Acts
+
+* Act I
+Start with just A, then add A -> (= "depends on") B, B -> D
+
+`go get` installs A v1.0, B v1.0, D v1.0
+
+
+	|              A v1.0
+	|             / 
+	|            /   
+	|           /     
+	|          /       
+	|         B v1.0      
+	|          \       
+	|           \     
+	|            \   
+	|             \ 
+	|              D v1.0
+
+* Intermission I
+Time passes...
+
+D gets updated up to v1.4
+
+but A is for now is good with B and D v1.0
+- HAPPY :)
+
+* Act II
+Add dependency A -> C; C *needs* D >= *v1.4* : C -> D v1.4
+
+but `go get` find D in GOPATH and does nothing 
+- BROKEN :(
+
+	|              A
+	|             / \
+	|            /   \
+	|           /     \
+	|          /       \ 
+	|         B v1.0    C v1.0 ( -> D >= v1.4)
+	|          \       /
+	|           \     /
+	|            \   /
+	|             \ /
+	|              D v1.0
+
+Solution: maybe update all dependencies?
+
+* Intermission II
+D's Author added D v1.6 which unfortunately breaks C...
+
+* Act III
+Run `go get -u`, updates D in GOPATH to *v1.6* 
+- BROKEN :(
+
+	|              A
+	|             / \
+	|            /   \
+	|           /     \
+	|          /       \ 
+	|         B v1.0    C v1.0 ( -> D >= v1.4)
+	|          \       /
+	|           \     /
+	|            \   /
+	|             \ /
+	|              D v1.6
+
+* Ideal - full spec of dependencies, dependencies don't "float upwards":
+A -> B v1.0
+A -> C v1.0
+B -> D v1.0
+C -> D v1.4 (D v1.4 "wins")
+- HAPPY :)
+
+	|              A
+	|             / \
+	|            /   \
+	|           /     \
+	|          /       \ 
+	|         B v1.0    C v1.0 ( -> D >= v1.4)
+	|          \       /
+	|           \     /
+	|            \   /
+	|             \ /
+	|              D v1.4
+
+
+* Previous / existing Go dependency tools
+- GOPATH, godep, gopkg.in, glide, vendor dir, dep
+- also goven, godeps, gb, govendor, etc.
+- Manifest (Gopkg.toml, glide.yaml) and Lock (Gopkg.lock, glide.lock)
+
+* Gopkg.toml example
+
+	[[constraint]]
+	  name = "github.com/davecgh/go-spew"
+	  revision = "adab96458c51a58dc1783b3335dcce5461522e75"
+	  source = "git@mirror.xyz.com:davecgh/go-spew.git"
+
+	[[override]]
+	  name = "github.com/golang/protobuf"
+	  branch = "master"
+	  source = "git@mirror.xyz.com:golang/protobuf.git"
+
+* Gopkg.lock example
+	[[projects]]
+	  branch = "master"
+	  digest = "0:"
+	  name = "github.com/golang/protobuf"
+	  packages = [
+	    "jsonpb",
+	    "proto",
+	    "ptypes/struct",
+	  ]
+	  pruneopts = "UT"
+	  revision = "0f2620f554cf5c8e281a2eb655a035f5a0f6dc90"
+	  source = "git@mirror.xyz.com:golang/protobuf.git"
+
+( exact revision is recorded in Gopkg.lock )
+
+* go mod subcommands
+
+	Usage:
+
+		go mod <command> [arguments]
+
+	The commands are:
+
+		download    download modules to local cache
+
+		edit        edit go.mod from tools or scripts
+
+		graph       print module requirement graph
+
+		init        initialize new module in current directory
+
+		tidy        add missing and remove unused modules
+
+		vendor      make vendored copy of dependencies
+
+		verify      verify dependencies have expected content
+
+		why         explain why packages or modules are needed
+
+* Links and References
+.link https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more `cmd/go` documentation
+.link https://github.com/golang/go/wiki/Modules Modules Wiki
+.link https://github.com/go-modules-by-example/index/blob/master/README.md Modules by Example 
+.link https://www.youtube.com/watch?v=F8nrpe0XWRg Russ Cox's GopherCon Singapore Keynote 
+.link https://research.swtch.com/vgo Russ Cox's original `vgo` papers
+.link https://www.youtube.com/watch?v=6MbIzJmLz6Q&list=PL8QGElREVyDA2iDrPNeCe8B1u7li5S6ep&index=5&t=0s Paul Jolly's talk
+.link https://talks.godoc.org/github.com/myitcv/talks/2018-08-15-glug-modules/main.slide slides
