@@ -255,14 +255,10 @@ C -> D v1.4 (D v1.4 "wins")
 
 * replace with gohack
 
-	$ go get github.com/rogpeppe/gohack
+	$ go get -u github.com/rogpeppe/gohack
 
-	$ gohack github.com/satori/go.uuid
-
-	$ gohack github.com/satori/go.uuid
-	creating github.com/satori/go.uuid@v1.2.0
+	$ gohack get github.com/satori/go.uuid
 	github.com/satori/go.uuid => /Users/<username>/gohack/github.com/satori/go.uuid
-
 
 	$ cat go.mod
 	module github.com/tchap/go-patricia/patricia
@@ -273,7 +269,7 @@ C -> D v1.4 (D v1.4 "wins")
 
 * gohack undo
 
-$ gohack -u
+	$ gohack undo
 	dropped github.com/satori/go.uuid
 
 * replace with remote version (or mirror)
